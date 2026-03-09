@@ -72,6 +72,9 @@ async def suggest_participants(req: SuggestParticipantsRequest, _: None = Depend
         suggestions = await openrouter.suggest_participants(req.topic, BUILT_IN_PERSONAS, req.suggestion_model)
         return suggestions
     except Exception as e:
+        import traceback
+        print(f"ERROR in suggest_participants: {e}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=502, detail=str(e))
 
 
