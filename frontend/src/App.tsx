@@ -13,7 +13,7 @@ export default function App() {
   const [historicalSummary, setHistoricalSummary] = useState<string | null>(null);
   const [showKeyError, setShowKeyError] = useState(false);
 
-  useEffect(() => onApiKeyError(() => setShowKeyError(true)), []);
+  useEffect(() => { const unsub = onApiKeyError(() => setShowKeyError(true)); return () => { unsub(); }; }, []);
 
   function handleMeetingCreated(m: Meeting) {
     setMeeting(m);
