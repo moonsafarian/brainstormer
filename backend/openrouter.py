@@ -272,6 +272,28 @@ async def complete_with_tools(
         return r.json()
 
 
+def _detect_repetition(text: str, window: int = 60, threshold: int = 4) -> bool:
+    """Return True if the tail of *text* contains a repeating pattern.
+
+    Looks at the last *window* chars and checks if any substring of length
+    6–window//threshold repeats at least *threshold* times consecutively.
+    This catches degenerate model loops like "textColor?textColor?textColor?…".
+    """
+    tail = text[-window * threshold :] if len(text) > window * threshold else text
+    if len(tail) < window:
+        return False
+    for pat_len in range(6, max(7, window // threshold)):
+        pat = tail[-pat_len:]
+        count = 0
+        pos = len(tail) - pat_len
+        while pos >= 0 and tail[pos:pos + pat_len] == pat:
+            count += 1
+            pos -= pat_len
+        if count >= threshold:
+            return True
+    return False
+
+
 async def stream_completion(
     messages: list[dict], model_id: str
 ) -> AsyncIterator[str]:
@@ -290,6 +312,7 @@ async def stream_completion(
             timeout=60,
         ) as response:
             response.raise_for_status()
+            accumulated = ""
             async for line in response.aiter_lines():
                 if not line.startswith("data:"):
                     continue
@@ -300,6 +323,10 @@ async def stream_completion(
                     chunk = json.loads(payload)
                     delta = chunk["choices"][0]["delta"].get("content", "")
                     if delta:
+                        accumulated += delta
                         yield delta
+                        if len(accumulated) > 300 and _detect_repetition(accumulated):
+                            print(f"[stream] repetition loop detected for {model_id}, aborting")
+                            break
                 except (json.JSONDecodeError, KeyError, IndexError):
                     continue

@@ -101,6 +101,8 @@ class Meeting(BaseModel):
     turns: list[Turn] = []
     summary: Optional[str] = None
     status: str = "active"
+    reopened_count: int = 0
+    reopened_at_turn: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
 

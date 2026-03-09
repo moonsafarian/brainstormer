@@ -46,6 +46,10 @@ def _format_transcript(meeting: Meeting, current_turn: Turn) -> str:
                 lines.append(f"{name} said: {c.content}")
         lines.append("")
 
+    # Reopening signal
+    if meeting.reopened_count > 0 and current_turn.number == len(meeting.turns) + 1:
+        lines.append("[The meeting host has reopened the discussion. Participants are encouraged to share any remaining thoughts, new angles, follow-up questions, or reconsiderations. Do not simply repeat what was already said — build on it or challenge it.]\n")
+
     # Current turn so far
     lines.append(f"=== Turn {current_turn.number} (now) ===")
     if current_turn.human_message:
@@ -334,13 +338,18 @@ async def run_turn(
             result["urgency"] = 9
             result["reason"] = "Directly addressed — must respond"
 
-    # ── 1c. Early-turn urgency floor ──────────────────────────────────────────
-    if turn.number <= _URGENCY_FLOOR_TURNS:
+    # ── 1c. Early-turn / post-reopen urgency floor ──────────────────────────
+    # Count how many turns happened since the last reopen
+    turns_since_reopen = len(meeting.turns) - (meeting.reopened_at_turn or 0)
+    is_early = turn.number <= _URGENCY_FLOOR_TURNS
+    is_post_reopen = meeting.reopened_count > 0 and turns_since_reopen < 2
+    if is_early or is_post_reopen:
+        floor_label = "post-reopen" if is_post_reopen else f"early turn ({turn.number})"
         for result in urgency_results:
             if result["urgency"] < _URGENCY_FLOOR_VALUE:
-                print(f"[urgency] {result['participant_id']}: early-turn floor {result['urgency']} → {_URGENCY_FLOOR_VALUE}")
+                print(f"[urgency] {result['participant_id']}: {floor_label} floor {result['urgency']} → {_URGENCY_FLOOR_VALUE}")
                 result["urgency"] = _URGENCY_FLOOR_VALUE
-                result["reason"] = f"Early turn ({turn.number}) — floor applied"
+                result["reason"] = f"{floor_label.capitalize()} — floor applied"
 
     for result in urgency_results:
         yield _sse("urgency", result)
@@ -423,8 +432,9 @@ async def run_turn(
         if not revival_candidates:
             revival_candidates = all_participant_ids - spoken_ids
         if not revival_candidates:
-            revival_candidates = all_participant_ids
-        revival_targets = [p for p in meeting.participants if p.id in revival_candidates]
+            # Everyone already spoke this turn — skip revival
+            needs_revival = False
+        revival_targets = [p for p in meeting.participants if p.id in revival_candidates] if needs_revival else []
 
         for participant in revival_targets:
             spoken_ids.add(participant.id)

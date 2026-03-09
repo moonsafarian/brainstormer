@@ -5,6 +5,10 @@ import type { CandidateSuggestion } from "../api";
 import { findBestModel, resolvePreferredModels } from "../utils/modelMatch";
 import { clearStoredApiKey, getStoredApiKey, hasStoredApiKey, setStoredApiKey } from "../utils/apiKey";
 import { getStoredSuggestionModel, setStoredSuggestionModel } from "../utils/suggestionModel";
+import { getStoredTheme, setStoredTheme } from "../utils/theme";
+import type { Theme } from "../utils/theme";
+import { getHistory, deleteFromHistory } from "../utils/history";
+import type { HistoryEntry } from "../utils/history";
 
 interface ParticipantDraft {
   name: string;
@@ -144,14 +148,14 @@ function ModelSelect({
         type="button"
         disabled={loading}
         onClick={() => (open ? setOpen(false) : handleOpen())}
-        className={`w-full text-left bg-gray-800 border rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors flex items-center justify-between gap-1
-          ${open ? "border-indigo-500" : "border-gray-700"}
-          ${loading ? "opacity-50 cursor-not-allowed" : "hover:border-gray-500 cursor-pointer"}`}
+        className={`w-full text-left bg-th-raised border rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors flex items-center justify-between gap-1
+          ${open ? "border-indigo-500" : "border-th-line-s"}
+          ${loading ? "opacity-50 cursor-not-allowed" : "hover:border-th-fg-muted cursor-pointer"}`}
       >
-        <span className={`truncate ${selected ? "text-gray-100" : "text-gray-500"}`}>
+        <span className={`truncate ${selected ? "text-th-fg" : "text-th-fg-muted"}`}>
           {loading ? "Loading…" : selected ? selected.name : "Select model"}
         </span>
-        <svg className="shrink-0 w-3 h-3 text-gray-500" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg className="shrink-0 w-3 h-3 text-th-fg-muted" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M1 1l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
@@ -160,11 +164,11 @@ function ModelSelect({
         <div
           ref={panelRef}
           style={dropdownStyle}
-          className="z-[9999] bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden flex flex-col"
+          className="z-[9999] bg-th-base border border-th-line-s rounded-xl shadow-2xl overflow-hidden flex flex-col"
         >
           {!search && suggestedCheap.length > 0 && (
-            <div className="p-3 border-b border-gray-800 shrink-0">
-              <p className="text-xs text-emerald-600 font-medium mb-1.5 uppercase tracking-wide">
+            <div className="p-3 border-b border-th-line shrink-0">
+              <p className="text-xs text-th-ok-fg font-medium mb-1.5 uppercase tracking-wide">
                 Low cost
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -176,7 +180,7 @@ function ModelSelect({
                     className={`text-xs px-2 py-1 rounded-full border transition-colors
                       ${value === m.id
                         ? "bg-emerald-700 border-emerald-600 text-white"
-                        : "bg-gray-800 border-gray-700 text-gray-300 hover:border-emerald-600 hover:text-white"
+                        : "bg-th-raised border-th-line-s text-th-fg-3 hover:border-emerald-600 hover:text-white"
                       }`}
                   >
                     {m.name}
@@ -187,8 +191,8 @@ function ModelSelect({
           )}
 
           {!search && suggestedAdvanced.length > 0 && (
-            <div className="p-3 border-b border-gray-800 shrink-0">
-              <p className="text-xs text-indigo-400 font-medium mb-1.5 uppercase tracking-wide">
+            <div className="p-3 border-b border-th-line shrink-0">
+              <p className="text-xs text-th-accent-fg-2 font-medium mb-1.5 uppercase tracking-wide">
                 Advanced
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -200,7 +204,7 @@ function ModelSelect({
                     className={`text-xs px-2 py-1 rounded-full border transition-colors
                       ${value === m.id
                         ? "bg-indigo-600 border-indigo-500 text-white"
-                        : "bg-gray-800 border-gray-700 text-gray-300 hover:border-indigo-500 hover:text-white"
+                        : "bg-th-raised border-th-line-s text-th-fg-3 hover:border-indigo-500 hover:text-white"
                       }`}
                   >
                     {m.name}
@@ -211,8 +215,8 @@ function ModelSelect({
           )}
 
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="px-3 pt-2.5 pb-2 border-b border-gray-800 shrink-0">
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1.5">
+            <div className="px-3 pt-2.5 pb-2 border-b border-th-line shrink-0">
+              <p className="text-xs text-th-fg-muted font-medium uppercase tracking-wide mb-1.5">
                 All models
               </p>
               <input
@@ -221,12 +225,12 @@ function ModelSelect({
                 placeholder={`Search ${models.length} models…`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full bg-th-raised rounded-lg px-3 py-1.5 text-sm text-th-fg placeholder-th-fg-muted focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
               {filteredAll.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-4">No models found</p>
+                <p className="text-xs text-th-fg-muted text-center py-4">No models found</p>
               ) : (
                 filteredAll.map((m) => (
                   <button
@@ -234,7 +238,7 @@ function ModelSelect({
                     type="button"
                     onClick={() => select(m.id)}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between gap-2
-                      ${value === m.id ? "bg-indigo-900 text-indigo-100" : "text-gray-300 hover:bg-gray-800"}`}
+                      ${value === m.id ? "bg-indigo-900 text-th-accent-fg-bright" : "text-th-fg-3 hover:bg-th-raised"}`}
                   >
                     <span className="truncate">{m.name}</span>
                     {cheapIds.has(m.id) && (
@@ -287,12 +291,12 @@ function ParticipantCard({
   onDelete?: () => void;
 }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 flex flex-col gap-1">
+    <div className="bg-th-base border border-th-line rounded-xl px-3 py-2.5 flex flex-col gap-1">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-sm font-medium text-gray-200 truncate">{name}</span>
+          <span className="text-sm font-medium text-th-fg-2 truncate">{name}</span>
           {personaName && (
-            <span className="text-xs text-indigo-400 shrink-0">{personaName}</span>
+            <span className="text-xs text-th-accent-fg-2 shrink-0">{personaName}</span>
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -300,30 +304,30 @@ function ParticipantCard({
             <button
               type="button"
               onClick={onSave}
-              title="Save for future meetings"
-              className="text-xs text-gray-500 hover:text-emerald-400 transition-colors px-1 py-0.5 rounded"
+              title="Save to your browser for reuse in future meetings"
+              className="text-xs text-th-fg-muted hover:text-th-ok-fg transition-colors px-1 py-0.5 rounded"
             >
-              Save
+              Remember
             </button>
           )}
           {onDelete && (
             <button
               type="button"
               onClick={onDelete}
-              title="Delete"
-              className="text-xs text-gray-500 hover:text-red-400 transition-colors px-1 py-0.5 rounded leading-none"
+              title="Remove from your browser's saved list"
+              className="text-xs text-th-fg-muted hover:text-red-400 transition-colors px-1 py-0.5 rounded"
             >
-              ×
+              Forget
             </button>
           )}
           {isAdded ? (
-            <span className="text-xs text-emerald-600 px-1.5 py-0.5">✓ Added</span>
+            <span className="text-xs text-th-ok-fg px-1.5 py-0.5">✓ Added</span>
           ) : (
             <button
               type="button"
               onClick={onAdd}
               title="Add to meeting"
-              className="text-xs text-gray-500 hover:text-indigo-400 transition-colors px-1.5 py-0.5 rounded border border-gray-700 hover:border-indigo-500"
+              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 transition-colors"
             >
               + Add
             </button>
@@ -331,10 +335,10 @@ function ParticipantCard({
         </div>
       </div>
       {description && (
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{description}</p>
+        <p className="text-xs text-th-fg-muted leading-relaxed line-clamp-2">{description}</p>
       )}
       {modelName && (
-        <p className="text-xs text-gray-600">{modelName}</p>
+        <p className="text-xs text-th-fg-faint">{modelName}</p>
       )}
     </div>
   );
@@ -365,9 +369,9 @@ function SuggestedParticipants({
 
   if (loading) {
     return (
-      <div className="mb-4 flex items-center gap-2 text-xs text-gray-500 animate-pulse py-1">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      <div className="mb-4 flex items-center gap-2 text-xs text-th-fg-muted py-1">
+        <svg className="w-3.5 h-3.5 shrink-0 animate-spin text-th-accent-fg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/>
         </svg>
         Finding the right people for this topic…
       </div>
@@ -385,11 +389,11 @@ function SuggestedParticipants({
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
-        className="flex items-center gap-1.5 text-xs text-gray-500 font-medium uppercase tracking-wide mb-2 hover:text-gray-300 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-th-fg-muted font-medium uppercase tracking-wide mb-2 hover:text-th-fg-3 transition-colors"
       >
         <Chevron open={!collapsed} />
         Suggested participants
-        <span className="text-gray-600">({candidates.length})</span>
+        <span className="text-th-fg-faint">({candidates.length})</span>
       </button>
       {!collapsed && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -432,7 +436,7 @@ function SavedParticipants({
   onAdd: (s: SavedParticipant) => void;
   onDelete: (id: string) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   if (saved.length === 0) return null;
 
@@ -441,11 +445,11 @@ function SavedParticipants({
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
-        className="flex items-center gap-1.5 text-xs text-gray-500 font-medium uppercase tracking-wide mb-2 hover:text-gray-300 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-th-fg-muted font-medium uppercase tracking-wide mb-2 hover:text-th-fg-3 transition-colors"
       >
         <Chevron open={!collapsed} />
-        Saved participants
-        <span className="text-gray-600">({saved.length})</span>
+        Remembered participants
+        <span className="text-th-fg-faint">({saved.length})</span>
       </button>
       {!collapsed && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -476,12 +480,12 @@ function SavedParticipants({
 function StepLabel({ step, label, hint }: { step: number; label: string; hint?: string }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400 shrink-0">
+      <span className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-th-accent-fg-2 shrink-0">
         {step}
       </span>
       <div>
-        <h2 className="text-sm font-semibold text-gray-200">{label}</h2>
-        {hint && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
+        <h2 className="text-sm font-semibold text-th-fg-2">{label}</h2>
+        {hint && <p className="text-xs text-th-fg-muted mt-0.5">{hint}</p>}
       </div>
     </div>
   );
@@ -491,8 +495,10 @@ function StepLabel({ step, label, hint }: { step: number; label: string; hint?: 
 
 export default function SetupScreen({
   onMeetingCreated,
+  onOpenHistorical,
 }: {
   onMeetingCreated: (m: Meeting) => void;
+  onOpenHistorical: (entry: HistoryEntry) => void;
 }) {
   const [topic, setTopic] = useState("");
   const [humanName, setHumanName] = useState("");
@@ -560,12 +566,27 @@ export default function SetupScreen({
     saveSaved(updated);
   }
 
+  // History modal
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  function openHistory() {
+    setHistory(getHistory());
+    setHistoryOpen(true);
+  }
+
+  function handleDeleteHistory(meetingId: string) {
+    deleteFromHistory(meetingId);
+    setHistory((prev) => prev.filter((e) => e.meeting.id !== meetingId));
+  }
+
   // Settings modal
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyInput, setKeyInput] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keyActive, setKeyActive] = useState(hasStoredApiKey);
   const [suggestionModelId, setSuggestionModelId] = useState(getStoredSuggestionModel);
+  const [theme, setTheme] = useState<Theme>(getStoredTheme);
 
   function openSettings() {
     setKeyInput("");
@@ -679,47 +700,60 @@ export default function SetupScreen({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top bar */}
-      <header className="border-b border-gray-800/60 bg-gray-950/90 backdrop-blur shrink-0">
+      <header className="border-b border-th-line/60 bg-th-page/90 backdrop-blur shrink-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-gray-100">Brainstormer</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h1 className="text-xl font-bold tracking-tight text-th-fg">Brainstormer</h1>
+            <p className="text-xs text-th-fg-muted mt-0.5">
               Simulate a multi-perspective AI meeting to stress-test your ideas.
             </p>
           </div>
+          <div className="flex items-center gap-1">
+          <button
+            onClick={openHistory}
+            title="History"
+            className="text-th-fg-muted hover:text-th-fg-2 transition-colors p-2 rounded-lg hover:bg-th-raised/60"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </button>
           <button
             onClick={openSettings}
             title="Settings"
-            className="relative text-gray-500 hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-800/60"
+            className="relative text-th-fg-muted hover:text-th-fg-2 transition-colors p-2 rounded-lg hover:bg-th-raised/60"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
             {keyActive && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-gray-950" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-th-page" />
             )}
           </button>
+          </div>
         </div>
       </header>
 
       {/* Settings modal */}
       {settingsOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-base font-semibold text-gray-100 mb-1">OpenRouter API Key</h3>
-            <p className="text-xs text-gray-500 mb-4">
+          <div className="bg-th-base border border-th-line-s rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-base font-semibold text-th-fg mb-3">Settings</h3>
+            <h4 className="text-sm font-medium text-th-fg-3 mb-1">OpenRouter API Key</h4>
+            <p className="text-xs text-th-fg-muted mb-4">
               Your key is stored obfuscated in your browser and sent securely with every request.
               It overrides any server-side default.
             </p>
 
             {keyActive && !keyInput && (
-              <div className="flex items-center gap-2 mb-3 text-xs text-emerald-400">
+              <div className="flex items-center gap-2 mb-3 text-xs text-th-ok-fg">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                 A custom key is currently active.
                 <button
                   onClick={handleClearKey}
-                  className="ml-auto text-gray-500 hover:text-red-400 transition-colors"
+                  className="ml-auto text-th-fg-muted hover:text-red-400 transition-colors"
                 >
                   Remove
                 </button>
@@ -733,13 +767,13 @@ export default function SetupScreen({
                 value={keyInput}
                 onChange={(e) => setKeyInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && keyInput.trim()) handleSaveKey(); }}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 pr-10 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 font-mono"
+                className="w-full bg-th-raised border border-th-line-s rounded-lg px-3 py-2.5 pr-10 text-sm text-th-fg placeholder-th-fg-muted focus:outline-none focus:border-indigo-500 font-mono"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => setShowKey((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-th-fg-muted hover:text-th-fg-3 transition-colors"
                 tabIndex={-1}
               >
                 {showKey ? (
@@ -757,10 +791,31 @@ export default function SetupScreen({
               </button>
             </div>
 
+            {/* Appearance */}
+            <div className="mb-4 border-t border-th-line pt-4">
+              <h4 className="text-sm font-medium text-th-fg-3 mb-1">Appearance</h4>
+              <div className="flex gap-2 mt-2">
+                {(["light", "dark"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => { setTheme(t); setStoredTheme(t); }}
+                    className={`flex-1 text-xs font-medium rounded-lg px-3 py-2 transition-colors capitalize ${
+                      theme === t
+                        ? "bg-indigo-600 text-white"
+                        : "bg-th-raised text-th-fg-muted hover:text-th-fg-2"
+                    }`}
+                  >
+                    {t === "light" ? "☀ Light" : "☾ Dark"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Suggestion model */}
-            <div className="mb-4 border-t border-gray-800 pt-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-1">Suggestion Model</h4>
-              <p className="text-xs text-gray-500 mb-2">
+            <div className="mb-4 border-t border-th-line pt-4">
+              <h4 className="text-sm font-medium text-th-fg-3 mb-1">Suggestion Model</h4>
+              <p className="text-xs text-th-fg-muted mb-2">
                 The AI model used to generate participant suggestions. Leave as default or pick your own.
               </p>
               <ModelSelect
@@ -784,11 +839,65 @@ export default function SetupScreen({
               </button>
               <button
                 onClick={() => setSettingsOpen(false)}
-                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg py-2 transition-colors"
+                className="flex-1 bg-th-raised hover:bg-th-line text-th-fg-3 text-sm rounded-lg py-2 transition-colors"
               >
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* History modal */}
+      {historyOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-th-base border border-th-line-s rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-th-fg">Meeting History</h3>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="text-th-fg-muted hover:text-th-fg-3 transition-colors p-1"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            {history.length === 0 ? (
+              <p className="text-sm text-th-fg-muted text-center py-8">No past meetings yet.</p>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+                {history.map((entry) => (
+                  <div
+                    key={entry.meeting.id}
+                    className="bg-th-raised border border-th-line rounded-xl px-4 py-3"
+                  >
+                    <p className="text-sm font-medium text-th-fg-2 line-clamp-2 mb-1">
+                      {entry.meeting.topic}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-th-fg-muted mb-2">
+                      <span>{entry.meeting.participants.length} participant{entry.meeting.participants.length !== 1 ? "s" : ""}</span>
+                      <span>{entry.meeting.turns.length} turn{entry.meeting.turns.length !== 1 ? "s" : ""}</span>
+                      <span>{new Date(entry.savedAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { onOpenHistorical(entry); setHistoryOpen(false); }}
+                        className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        Open
+                      </button>
+                      <button
+                        onClick={() => handleDeleteHistory(entry.meeting.id)}
+                        className="text-xs text-th-fg-muted hover:text-red-400 transition-colors px-2 py-1.5"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -810,7 +919,7 @@ export default function SetupScreen({
                   hint="Describe your question, dilemma, or idea. The more context you give, the better the discussion."
                 />
                 <textarea
-                  className="w-full bg-gray-900/60 border border-gray-700/60 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500/60 resize-none transition-colors"
+                  className="w-full bg-th-base/60 border border-th-line-s/60 rounded-xl px-4 py-3 text-th-fg placeholder-th-fg-muted focus:outline-none focus:border-indigo-500/60 resize-none transition-colors"
                   rows={4}
                   placeholder="e.g. Should we pivot our product to focus on enterprise customers? We currently have 200 SMB customers with $15K avg ARR but two Fortune 500 companies have expressed interest…"
                   value={topic}
@@ -828,24 +937,24 @@ export default function SetupScreen({
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1.5">
-                      Your name <span className="text-gray-600">(so participants can address you)</span>
+                    <label className="block text-xs text-th-fg-4 mb-1.5">
+                      Your name <span className="text-th-fg-faint">(so participants can address you)</span>
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. Alex"
                       value={humanName}
                       onChange={(e) => setHumanName(e.target.value)}
-                      className="w-full bg-gray-900/60 border border-gray-700/60 rounded-lg px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500/60 transition-colors"
+                      className="w-full bg-th-base/60 border border-th-line-s/60 rounded-lg px-4 py-2.5 text-th-fg placeholder-th-fg-muted focus:outline-none focus:border-indigo-500/60 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1.5">
+                    <label className="block text-xs text-th-fg-4 mb-1.5">
                       Speaking threshold:{" "}
-                      <span className="text-indigo-400 font-bold">{threshold}/10</span>
+                      <span className="text-th-accent-fg-2 font-bold">{threshold}/10</span>
                     </label>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-xs text-th-fg-faint mb-2">
                       How much a participant needs to say before they speak up. Lower = more talkative, higher = only speak when they really have something to add.
                     </p>
                     <input
@@ -856,10 +965,10 @@ export default function SetupScreen({
                       onChange={(e) => setThreshold(Number(e.target.value))}
                       className="w-full h-2 rounded-full appearance-none cursor-pointer"
                       style={{
-                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${threshold * 10}%, #374151 ${threshold * 10}%, #374151 100%)`,
+                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${threshold * 10}%, rgb(var(--th-line-s)) ${threshold * 10}%, rgb(var(--th-line-s)) 100%)`,
                       }}
                     />
-                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                    <div className="flex justify-between text-xs text-th-fg-faint mt-1">
                       <span>Everyone speaks</span>
                       <span>Only when urgent</span>
                     </div>
@@ -892,7 +1001,7 @@ export default function SetupScreen({
                     </svg>
                     {loadingCandidates ? "Finding…" : "Suggest participants for my topic"}
                   </button>
-                  <span className="text-xs text-gray-600">or add manually below</span>
+                  <span className="text-xs text-th-fg-faint">or add manually below</span>
                 </div>
 
                 {/* Suggested participants */}
@@ -907,7 +1016,7 @@ export default function SetupScreen({
                   onSave={saveCandidate}
                 />
 
-                {/* Saved participants */}
+                {/* Remembered participants */}
                 <SavedParticipants
                   saved={saved}
                   personas={personas}
@@ -919,7 +1028,7 @@ export default function SetupScreen({
 
                 {/* Manual participant forms */}
                 <div className="flex items-center justify-between mb-3 mt-2">
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  <p className="text-xs text-th-fg-muted font-medium uppercase tracking-wide">
                     Meeting roster ({validParticipants.length} participant{validParticipants.length !== 1 ? "s" : ""})
                   </p>
                   <button
@@ -932,19 +1041,19 @@ export default function SetupScreen({
                 </div>
                 <div className="space-y-4">
                   {participants.map((p, i) => (
-                    <div key={i} className="bg-gray-900/60 border border-gray-800/60 rounded-xl p-4">
+                    <div key={i} className="bg-th-base/60 border border-th-line/60 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        <span className="text-xs text-th-fg-muted font-medium uppercase tracking-wide">
                           Participant {i + 1}
                         </span>
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => saveParticipant(i)}
                             disabled={!p.name.trim() || !p.model_id || !p.persona_id}
-                            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 disabled:opacity-30 transition-colors"
-                            title="Save participant for future meetings"
+                            className="text-xs text-th-fg-muted hover:text-th-ok-fg disabled:opacity-30 transition-colors px-1 py-0.5 rounded"
+                            title="Save to your browser for reuse in future meetings"
                           >
-                            Save
+                            Remember
                           </button>
                           <button
                             onClick={() => removeParticipant(i)}
@@ -961,12 +1070,12 @@ export default function SetupScreen({
                           placeholder="Name *"
                           value={p.name}
                           onChange={(e) => updateParticipant(i, "name", e.target.value)}
-                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                          className="bg-th-raised border border-th-line-s rounded-lg px-3 py-2 text-sm text-th-fg placeholder-th-fg-muted focus:outline-none focus:border-indigo-500"
                         />
                         <select
                           value={p.persona_id}
                           onChange={(e) => updateParticipant(i, "persona_id", e.target.value)}
-                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-indigo-500"
+                          className="bg-th-raised border border-th-line-s rounded-lg px-3 py-2 text-sm text-th-fg focus:outline-none focus:border-indigo-500"
                         >
                           <option value="">Select persona</option>
                           {personas.map((persona) => (
@@ -988,11 +1097,11 @@ export default function SetupScreen({
                         placeholder="Background or expertise (optional) — e.g. 10 years in B2B SaaS sales"
                         value={p.description}
                         onChange={(e) => updateParticipant(i, "description", e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-400 placeholder-gray-600 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-th-raised border border-th-line-s rounded-lg px-3 py-2 text-sm text-th-fg-4 placeholder-th-fg-faint focus:outline-none focus:border-indigo-500"
                       />
 
                       {p.persona_id && (
-                        <p className="text-xs text-gray-600 mt-2">
+                        <p className="text-xs text-th-fg-faint mt-2">
                           {personas.find((x) => x.id === p.persona_id)?.description}
                         </p>
                       )}
@@ -1014,7 +1123,7 @@ export default function SetupScreen({
               {loading ? "Starting…" : `Start Meeting${validParticipants.length > 0 ? ` with ${validParticipants.length} participant${validParticipants.length > 1 ? "s" : ""}` : ""}`}
             </button>
             {validParticipants.length === 0 && (
-              <p className="text-xs text-gray-600 text-center mt-2">
+              <p className="text-xs text-th-fg-faint text-center mt-2">
                 Add at least one participant to start.
               </p>
             )}

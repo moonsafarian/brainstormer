@@ -2,28 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-/* HTML summary document styles */
+/* ── Base font size (scales all rem-based Tailwind utilities) ─────────── */
+
+html {
+  font-size: 18px;
+}
+
+/* ── Theme color tokens ─────────────────────────────────────────────────── */
+
+:root {
+  /* Backgrounds */
+  --th-page: 249 250 251;         /* gray-50 */
+  --th-base: 255 255 255;         /* white */
+  --th-raised: 243 244 246;       /* gray-100 */
+
+  /* Borders */
+  --th-line: 229 231 235;         /* gray-200 */
+  --th-line-s: 209 213 219;       /* gray-300 */
+
+  /* Text */
+  --th-fg: 17 24 39;              /* gray-900 */
+  --th-fg-2: 31 41 55;            /* gray-800 */
+  --th-fg-3: 55 65 81;            /* gray-700 */
+  --th-fg-4: 75 85 99;            /* gray-600 */
+  --th-fg-muted: 107 114 128;     /* gray-500 */
+  --th-fg-faint: 156 163 175;     /* gray-400 */
+
+  /* Accent (indigo) */
+  --th-accent: 199 210 254;       /* indigo-200 */
+  --th-accent-fg: 79 70 229;      /* indigo-600 */
+  --th-accent-fg-2: 99 102 241;   /* indigo-500 */
+  --th-accent-fg-bright: 49 46 129; /* indigo-900 */
+
+  /* OK (emerald) */
+  --th-ok: 209 250 229;           /* emerald-100 */
+  --th-ok-fg: 5 150 105;          /* emerald-600 */
+}
+
+.dark {
+  --th-page: 3 7 18;              /* gray-950 */
+  --th-base: 17 24 39;            /* gray-900 */
+  --th-raised: 31 41 55;          /* gray-800 */
+
+  --th-line: 31 41 55;            /* gray-800 */
+  --th-line-s: 55 65 81;          /* gray-700 */
+
+  --th-fg: 243 244 246;           /* gray-100 */
+  --th-fg-2: 229 231 235;         /* gray-200 */
+  --th-fg-3: 209 213 219;         /* gray-300 */
+  --th-fg-4: 156 163 175;         /* gray-400 */
+  --th-fg-muted: 107 114 128;     /* gray-500 */
+  --th-fg-faint: 75 85 99;        /* gray-600 */
+
+  --th-accent: 30 27 75;          /* indigo-950 */
+  --th-accent-fg: 165 180 252;    /* indigo-300 */
+  --th-accent-fg-2: 129 140 248;  /* indigo-400 */
+  --th-accent-fg-bright: 224 231 255; /* indigo-100 */
+
+  --th-ok: 6 78 59;               /* emerald-900 */
+  --th-ok-fg: 52 211 153;         /* emerald-400 */
+}
+
+/* ── HTML summary document styles ──────────────────────────────────────── */
+
 .summary-doc h2 {
-  @apply text-xl font-bold text-gray-100 mt-6 mb-3 first:mt-0;
+  @apply text-xl font-bold mt-6 mb-3 first:mt-0;
+  color: rgb(var(--th-fg));
 }
 .summary-doc h3 {
-  @apply text-base font-semibold text-indigo-300 mt-5 mb-2 uppercase tracking-wide;
+  @apply text-base font-semibold mt-5 mb-2 uppercase tracking-wide;
+  color: rgb(var(--th-accent-fg));
 }
 .summary-doc p {
-  @apply mb-3 text-gray-300 text-base;
+  @apply mb-3 text-base;
+  color: rgb(var(--th-fg-3));
 }
 .summary-doc ul {
-  @apply list-disc list-inside space-y-1.5 mb-3 text-gray-300 text-base;
+  @apply list-disc list-inside space-y-1.5 mb-3 text-base;
+  color: rgb(var(--th-fg-3));
 }
 .summary-doc li {
   @apply leading-relaxed;
 }
 .summary-doc strong {
-  @apply text-gray-100 font-semibold;
+  @apply font-semibold;
+  color: rgb(var(--th-fg));
 }
 .summary-doc em {
-  @apply text-gray-400 italic;
+  @apply italic;
+  color: rgb(var(--th-fg-4));
 }
 .summary-doc hr {
-  @apply border-gray-700 my-5;
+  @apply my-5;
+  border-color: rgb(var(--th-line-s));
 }

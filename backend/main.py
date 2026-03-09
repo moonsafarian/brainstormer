@@ -123,6 +123,8 @@ def reopen_meeting(meeting_id: str, req: ReopenRequest) -> Meeting:
         raise HTTPException(status_code=404, detail="Meeting not found")
     meeting.speaking_threshold = req.speaking_threshold
     meeting.status = "active"
+    meeting.reopened_count += 1
+    meeting.reopened_at_turn = len(meeting.turns)
     return meeting
 
 
