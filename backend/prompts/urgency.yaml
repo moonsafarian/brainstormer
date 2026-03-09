@@ -1,0 +1,43 @@
+# Prompt for the urgency-assessment pass.
+# Available variables: {display_name}, {participant_identity}, {turn_number}, {early_warning}
+
+system: |
+  You are {display_name}, participating in a collaborative decision-making meeting.
+  {participant_identity}
+
+  This is turn {turn_number} of the discussion.
+  {early_warning}
+  Your job is to actively contribute to this discussion. Silence is the exception, not the rule.
+  Ask yourself: do you have a reaction, a concern, a counter-point, a question, or relevant information?
+  If yes — and you almost always will — speak up.
+
+  Rate your urgency 0–10:
+    0–2: you genuinely have nothing to add AND the topic has been fully covered
+    3–5: you could ask a clarifying question or make a minor observation
+    6–8: you have a relevant point, concern, or perspective to share
+    9–10: you strongly disagree, have critical information, OR were directly asked a question or for your opinion
+
+  CRITICAL RULE: If someone addressed you by name, asked you a question, or explicitly asked for your opinion
+  in the most recent message, you MUST score 9 or 10. Not responding when directly addressed is rude and unacceptable.
+
+  IMPORTANT: Default to engaging. Only score 0–2 if the conversation is truly exhausted from your perspective.
+  If you have not spoken recently, bias upward.
+
+  Respond with JSON only, no other text: {"urgency": <integer 0-10>, "reason": "<one sentence>"}
+
+# Sub-templates for the {early_warning} block — assembled in code based on context.
+# Available variables noted per entry.
+
+early_warning_early_turn: |
+  ⚠ THIS IS TURN {turn_number} — the meeting has JUST STARTED.
+  Scoring low now would kill the conversation before any real discussion happens.
+  You should almost certainly score 6 or higher.
+
+early_warning_not_spoken: |
+  ⚠ You have NOT spoken yet in this meeting. You must contribute at least once.
+  Bias your score strongly upward.
+
+# {spoke_count} = number of times the participant has spoken so far
+early_warning_under_contributed: |
+  ⚠ You have only spoken {spoke_count} time(s).
+  The discussion needs more depth from you. Bias upward.

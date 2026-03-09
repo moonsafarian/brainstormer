@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install react-markdown remark-gfm)",
+      "Bash(node -e \"const m = require\\(''./node_modules/react-markdown/package.json''\\); console.log\\(m.version\\)\")",
+      "Bash(git init)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"UI ONE — checkpoint before full-width layout experiment\")"
+    ]
+  }
+}
