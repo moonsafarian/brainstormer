@@ -809,8 +809,9 @@ export default function MeetingScreen({
                     value={humanInput}
                     onChange={(e) => setHumanInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                        handleHumanSubmit(false);
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!isFirstTurn || humanInput.trim()) handleHumanSubmit(false);
                       }
                     }}
                   />
