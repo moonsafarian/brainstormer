@@ -392,7 +392,7 @@ function SuggestedParticipants({
         <span className="text-gray-600">({candidates.length})</span>
       </button>
       {!collapsed && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {candidates.map((c, i) => {
             const persona = personas.find((p) => p.id === c.persona_id);
             const model = models.find((m) => m.id === c.model_id);
@@ -448,7 +448,7 @@ function SavedParticipants({
         <span className="text-gray-600">({saved.length})</span>
       </button>
       {!collapsed && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {saved.map((s) => {
             const persona = personas.find((p) => p.id === s.persona_id);
             const model = models.find((m) => m.id === s.model_id);
@@ -467,6 +467,22 @@ function SavedParticipants({
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Step indicator ────────────────────────────────────────────────────────────
+
+function StepLabel({ step, label, hint }: { step: number; label: string; hint?: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <span className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400 shrink-0">
+        {step}
+      </span>
+      <div>
+        <h2 className="text-sm font-semibold text-gray-200">{label}</h2>
+        {hint && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
+      </div>
     </div>
   );
 }
@@ -658,28 +674,34 @@ export default function SetupScreen({
     }
   }
 
+  const validParticipants = participants.filter((p) => p.name.trim() && p.model_id && p.persona_id);
+
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      {/* Header row */}
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-3xl font-bold tracking-tight">Brainstormer</h1>
-        <button
-          onClick={openSettings}
-          title="API key settings"
-          className="relative text-gray-500 hover:text-gray-200 transition-colors p-1.5 rounded-lg hover:bg-gray-800"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          {keyActive && (
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-gray-950" />
-          )}
-        </button>
-      </div>
-      <p className="text-gray-400 mb-8 text-sm">
-        Simulate a meeting with AI participants to help you make better decisions.
-      </p>
+    <div className="min-h-screen flex flex-col">
+      {/* Top bar */}
+      <header className="border-b border-gray-800/60 bg-gray-950/90 backdrop-blur shrink-0">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-gray-100">Brainstormer</h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Simulate a multi-perspective AI meeting to stress-test your ideas.
+            </p>
+          </div>
+          <button
+            onClick={openSettings}
+            title="Settings"
+            className="relative text-gray-500 hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-800/60"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            {keyActive && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-gray-950" />
+            )}
+          </button>
+        </div>
+      </header>
 
       {/* Settings modal */}
       {settingsOpen && (
@@ -771,193 +793,234 @@ export default function SetupScreen({
         </div>
       )}
 
-      {/* Topic */}
-      <section className="mb-6">
-        <label className="block text-sm font-medium text-gray-300 mb-1">
-          What do you want to decide?
-        </label>
-        <textarea
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
-          rows={3}
-          placeholder="e.g. Should we pivot our product to focus on enterprise customers?"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-        />
-      </section>
+      {/* Main content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      {/* Meeting settings */}
-      <section className="mb-6 flex gap-8 items-start">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Speaking threshold:{" "}
-            <span className="text-indigo-400 font-bold">{threshold}/10</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={10}
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer"
-            style={{
-              background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${threshold * 10}%, #374151 ${threshold * 10}%, #374151 100%)`,
-            }}
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Chatty (0)</span>
-            <span>Focused (10)</span>
-          </div>
-        </div>
-      </section>
+          {/* Two-column layout on wide screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
-      {/* Participants */}
-      <section className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-gray-300">Participants</h2>
-          <button
-            type="button"
-            onClick={handleFindPeople}
-            disabled={!topic.trim() || loadingCandidates}
-            className="text-xs bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1.5"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            {loadingCandidates ? "Finding…" : "Find people"}
-          </button>
-        </div>
+            {/* Left column: Topic + settings */}
+            <div className="lg:col-span-2">
+              {/* Step 1: Topic */}
+              <section className="mb-8">
+                <StepLabel
+                  step={1}
+                  label="What do you want to decide?"
+                  hint="Describe your question, dilemma, or idea. The more context you give, the better the discussion."
+                />
+                <textarea
+                  className="w-full bg-gray-900/60 border border-gray-700/60 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500/60 resize-none transition-colors"
+                  rows={4}
+                  placeholder="e.g. Should we pivot our product to focus on enterprise customers? We currently have 200 SMB customers with $15K avg ARR but two Fortune 500 companies have expressed interest…"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                />
+              </section>
 
-        {/* Your name */}
-        <div className="mb-4">
-          <label className="block text-xs text-gray-500 font-medium uppercase tracking-wide mb-1.5">
-            Your name{" "}
-            <span className="text-gray-600 normal-case font-normal">(so participants can address you)</span>
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. Alex"
-            value={humanName}
-            onChange={(e) => setHumanName(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
+              {/* Step 2: Settings */}
+              <section className="mb-8">
+                <StepLabel
+                  step={2}
+                  label="Meeting settings"
+                  hint="Configure who you are and how freely participants speak."
+                />
 
-        {/* Suggested participants */}
-        <SuggestedParticipants
-          candidates={candidates}
-          loading={loadingCandidates}
-          error={candidatesError}
-          personas={personas}
-          models={models}
-          addedNames={new Set(participants.map((p) => p.name.trim().toLowerCase()).filter(Boolean))}
-          onAdd={addCandidateToMeeting}
-          onSave={saveCandidate}
-        />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1.5">
+                      Your name <span className="text-gray-600">(so participants can address you)</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Alex"
+                      value={humanName}
+                      onChange={(e) => setHumanName(e.target.value)}
+                      className="w-full bg-gray-900/60 border border-gray-700/60 rounded-lg px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500/60 transition-colors"
+                    />
+                  </div>
 
-        {/* Saved participants */}
-        <SavedParticipants
-          saved={saved}
-          personas={personas}
-          models={models}
-          addedNames={new Set(participants.map((p) => p.name.trim().toLowerCase()).filter(Boolean))}
-          onAdd={addSavedToMeeting}
-          onDelete={deleteSaved}
-        />
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1.5">
+                      Speaking threshold:{" "}
+                      <span className="text-indigo-400 font-bold">{threshold}/10</span>
+                    </label>
+                    <p className="text-xs text-gray-600 mb-2">
+                      How much a participant needs to say before they speak up. Lower = more talkative, higher = only speak when they really have something to add.
+                    </p>
+                    <input
+                      type="range"
+                      min={0}
+                      max={10}
+                      value={threshold}
+                      onChange={(e) => setThreshold(Number(e.target.value))}
+                      className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${threshold * 10}%, #374151 ${threshold * 10}%, #374151 100%)`,
+                      }}
+                    />
+                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                      <span>Everyone speaks</span>
+                      <span>Only when urgent</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
 
-        {/* Add participants */}
-        <div className="flex items-center justify-between mb-3 mt-2">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Add participants</p>
-          <button
-            onClick={addParticipant}
-            disabled={participants.length >= 6}
-            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-3 py-1.5 disabled:opacity-40 transition-colors"
-          >
-            + Add
-          </button>
-        </div>
-        <div className="space-y-4">
-          {participants.map((p, i) => (
-            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                  Participant {i + 1}
-                </span>
-                <div className="flex items-center gap-3">
+            {/* Right column: Participants */}
+            <div className="lg:col-span-3">
+              <section>
+                <StepLabel
+                  step={3}
+                  label="Choose your participants"
+                  hint="Each participant uses a different AI model and brings a unique perspective. You can create your own or let AI suggest the right people for your topic."
+                />
+
+                <div className="flex items-center gap-2 mb-5">
                   <button
-                    onClick={() => saveParticipant(i)}
-                    disabled={!p.name.trim() || !p.model_id || !p.persona_id}
-                    className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 disabled:opacity-30 transition-colors"
-                    title="Save participant for future meetings"
+                    type="button"
+                    onClick={handleFindPeople}
+                    disabled={!topic.trim() || loadingCandidates}
+                    className="text-xs bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1.5"
                   >
-                    Save
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    {loadingCandidates ? "Finding…" : "Suggest participants for my topic"}
                   </button>
+                  <span className="text-xs text-gray-600">or add manually below</span>
+                </div>
+
+                {/* Suggested participants */}
+                <SuggestedParticipants
+                  candidates={candidates}
+                  loading={loadingCandidates}
+                  error={candidatesError}
+                  personas={personas}
+                  models={models}
+                  addedNames={new Set(participants.map((p) => p.name.trim().toLowerCase()).filter(Boolean))}
+                  onAdd={addCandidateToMeeting}
+                  onSave={saveCandidate}
+                />
+
+                {/* Saved participants */}
+                <SavedParticipants
+                  saved={saved}
+                  personas={personas}
+                  models={models}
+                  addedNames={new Set(participants.map((p) => p.name.trim().toLowerCase()).filter(Boolean))}
+                  onAdd={addSavedToMeeting}
+                  onDelete={deleteSaved}
+                />
+
+                {/* Manual participant forms */}
+                <div className="flex items-center justify-between mb-3 mt-2">
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                    Meeting roster ({validParticipants.length} participant{validParticipants.length !== 1 ? "s" : ""})
+                  </p>
                   <button
-                    onClick={() => removeParticipant(i)}
-                    className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 transition-colors"
+                    onClick={addParticipant}
+                    disabled={participants.length >= 6}
+                    className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-3 py-1.5 disabled:opacity-40 transition-colors"
                   >
-                    Remove
+                    + Add
                   </button>
                 </div>
-              </div>
+                <div className="space-y-4">
+                  {participants.map((p, i) => (
+                    <div key={i} className="bg-gray-900/60 border border-gray-800/60 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                          Participant {i + 1}
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => saveParticipant(i)}
+                            disabled={!p.name.trim() || !p.model_id || !p.persona_id}
+                            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 disabled:opacity-30 transition-colors"
+                            title="Save participant for future meetings"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => removeParticipant(i)}
+                            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-2.5 py-1 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                <input
-                  type="text"
-                  placeholder="Name *"
-                  value={p.name}
-                  onChange={(e) => updateParticipant(i, "name", e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-                />
-                <select
-                  value={p.persona_id}
-                  onChange={(e) => updateParticipant(i, "persona_id", e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="">Select persona</option>
-                  {personas.map((persona) => (
-                    <option key={persona.id} value={persona.id}>
-                      {persona.name}
-                    </option>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                        <input
+                          type="text"
+                          placeholder="Name *"
+                          value={p.name}
+                          onChange={(e) => updateParticipant(i, "name", e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                        />
+                        <select
+                          value={p.persona_id}
+                          onChange={(e) => updateParticipant(i, "persona_id", e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-indigo-500"
+                        >
+                          <option value="">Select persona</option>
+                          {personas.map((persona) => (
+                            <option key={persona.id} value={persona.id}>
+                              {persona.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ModelSelect
+                          value={p.model_id}
+                          onChange={(id) => updateParticipant(i, "model_id", id)}
+                          models={models}
+                          loading={loadingModels}
+                        />
+                      </div>
+
+                      <input
+                        type="text"
+                        placeholder="Background or expertise (optional) — e.g. 10 years in B2B SaaS sales"
+                        value={p.description}
+                        onChange={(e) => updateParticipant(i, "description", e.target.value)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-400 placeholder-gray-600 focus:outline-none focus:border-indigo-500"
+                      />
+
+                      {p.persona_id && (
+                        <p className="text-xs text-gray-600 mt-2">
+                          {personas.find((x) => x.id === p.persona_id)?.description}
+                        </p>
+                      )}
+                    </div>
                   ))}
-                </select>
-                <ModelSelect
-                  value={p.model_id}
-                  onChange={(id) => updateParticipant(i, "model_id", id)}
-                  models={models}
-                  loading={loadingModels}
-                />
-              </div>
-
-              <input
-                type="text"
-                placeholder="Background or expertise (optional) — e.g. 10 years in B2B SaaS sales"
-                value={p.description}
-                onChange={(e) => updateParticipant(i, "description", e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-400 placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-              />
-
-              {p.persona_id && (
-                <p className="text-xs text-gray-600 mt-2">
-                  {personas.find((x) => x.id === p.persona_id)?.description}
-                </p>
-              )}
+                </div>
+              </section>
             </div>
-          ))}
+          </div>
+
+          {/* Start button */}
+          <div className="mt-8 max-w-md mx-auto">
+            {error && <p className="text-red-400 text-sm mb-3 text-center">{error}</p>}
+            <button
+              onClick={handleStart}
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl py-3.5 transition-colors text-base"
+            >
+              {loading ? "Starting…" : `Start Meeting${validParticipants.length > 0 ? ` with ${validParticipants.length} participant${validParticipants.length > 1 ? "s" : ""}` : ""}`}
+            </button>
+            {validParticipants.length === 0 && (
+              <p className="text-xs text-gray-600 text-center mt-2">
+                Add at least one participant to start.
+              </p>
+            )}
+          </div>
         </div>
-      </section>
-
-      {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-
-      <button
-        onClick={handleStart}
-        disabled={loading}
-        className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl py-3 transition-colors"
-      >
-        {loading ? "Starting…" : "Start Meeting"}
-      </button>
+      </div>
     </div>
   );
 }
