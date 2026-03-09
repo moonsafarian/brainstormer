@@ -24,7 +24,6 @@ def set_request_api_key(key: str) -> None:
 
 def _api_key() -> str:
     key = _request_key.get() or os.environ.get("OPENROUTER_API_KEY", "")
-    print(f"[debug] api_key source={'header' if _request_key.get() else 'env'}, length={len(key)}, prefix={key[:12]}..." if key else "[debug] NO API KEY FOUND")
     if not key:
         raise RuntimeError(
             "No OpenRouter API key found. Set OPENROUTER_API_KEY in the environment "

@@ -14,6 +14,21 @@ import { getStoredApiKey } from "./utils/apiKey";
 
 const BASE = "/api";
 
+// Global listener for invalid API key errors
+type ApiKeyErrorListener = () => void;
+const apiKeyErrorListeners: Set<ApiKeyErrorListener> = new Set();
+export function onApiKeyError(fn: ApiKeyErrorListener) {
+  apiKeyErrorListeners.add(fn);
+  return () => apiKeyErrorListeners.delete(fn);
+}
+function notifyApiKeyError() {
+  apiKeyErrorListeners.forEach((fn) => fn());
+}
+
+function isAuthError(status: number, detail?: string): boolean {
+  return status === 401 || (status === 502 && !!detail?.includes("401"));
+}
+
 function authHeaders(extra?: Record<string, string>): Record<string, string> {
   const key = getStoredApiKey();
   return key ? { ...extra, "X-Api-Key": key } : { ...extra };
@@ -66,6 +81,7 @@ export async function suggestParticipants(
   });
   if (!r.ok) {
     const body = await r.json().catch(() => ({}));
+    if (isAuthError(r.status, body?.detail)) { notifyApiKeyError(); return []; }
     throw new Error(body?.detail ?? "Failed to suggest participants");
   }
   return r.json();
@@ -105,6 +121,10 @@ export async function runTurn(
     body: JSON.stringify({ human_message: humanMessage }),
   });
   if (!r.ok) {
+    if (r.status === 502) {
+      const body = await r.json().catch(() => ({}));
+      if (isAuthError(r.status, body?.detail)) { notifyApiKeyError(); return; }
+    }
     callbacks.onError(new Error(`Turn failed: ${r.status}`));
     return;
   }
@@ -133,6 +153,10 @@ export async function requestSummary(
     headers: authHeaders(),
   });
   if (!r.ok) {
+    if (r.status === 502) {
+      const body = await r.json().catch(() => ({}));
+      if (isAuthError(r.status, body?.detail)) { notifyApiKeyError(); return; }
+    }
     callbacks.onError(new Error(`Summary failed: ${r.status}`));
     return;
   }
