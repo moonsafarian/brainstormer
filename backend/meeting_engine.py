@@ -62,6 +62,40 @@ def _format_transcript(meeting: Meeting, current_turn: Turn) -> str:
     return "\n".join(lines)
 
 
+def _format_transcript_recent(meeting: Meeting, current_turn: Turn, max_turns: int) -> str:
+    """Like _format_transcript but only includes the last `max_turns` completed turns.
+
+    Keeps the urgency prompt short so models respond quickly even in long meetings.
+    """
+    lines: list[str] = [f"Meeting topic: {meeting.topic}\n"]
+    human_label = _human_label(meeting)
+    dnames = _display_names(meeting)
+
+    recent = meeting.turns[-max_turns:] if len(meeting.turns) > max_turns else meeting.turns
+    if len(meeting.turns) > max_turns:
+        lines.append(f"[… {len(meeting.turns) - max_turns} earlier turns omitted …]\n")
+
+    for turn in recent:
+        lines.append(f"=== Turn {turn.number} ===")
+        if turn.human_message:
+            lines.append(f"{human_label} said: {turn.human_message}")
+        for c in turn.contributions:
+            if c.did_speak and c.content:
+                name = dnames.get(c.participant_id, c.participant_id)
+                lines.append(f"{name} said: {c.content}")
+        lines.append("")
+
+    lines.append(f"=== Turn {current_turn.number} (now) ===")
+    if current_turn.human_message:
+        lines.append(f"{human_label} said: {current_turn.human_message}")
+    for c in current_turn.contributions:
+        if c.did_speak and c.content:
+            name = dnames.get(c.participant_id, c.participant_id)
+            lines.append(f"{name} said: {c.content}")
+
+    return "\n".join(lines)
+
+
 def _participant_by_id(meeting: Meeting, pid: str) -> Optional[Participant]:
     return next((p for p in meeting.participants if p.id == pid), None)
 
@@ -89,6 +123,10 @@ _MIN_CONTRIBUTIONS_PER_PARTICIPANT = 2
 # participants can't all silently opt out before any real discussion happens.
 _URGENCY_FLOOR_TURNS = 3
 _URGENCY_FLOOR_VALUE = 6
+# Max recent turns to include in the urgency transcript (keeps context short).
+_URGENCY_TRANSCRIPT_TURNS = 4
+# Timeout for the entire urgency pass (all participants in parallel).
+_URGENCY_TIMEOUT = 60
 
 
 def _participant_contribution_counts(meeting: Meeting) -> Counter[str]:
@@ -321,15 +359,26 @@ async def run_turn(
     """
     turn = Turn(id=new_id(), number=len(meeting.turns) + 1, human_message=human_message)
     transcript = _format_transcript(meeting, turn)
+    urgency_transcript = _format_transcript_recent(meeting, turn, _URGENCY_TRANSCRIPT_TURNS)
     dnames = _display_names(meeting)
 
     # ── 1. Urgency pass (all participants in parallel) ────────────────────────
     contrib_counts = _participant_contribution_counts(meeting)
     urgency_tasks = [
-        _assess_urgency(p, transcript, dnames[p.id], turn.number, contrib_counts.get(p.id, 0))
+        _assess_urgency(p, urgency_transcript, dnames[p.id], turn.number, contrib_counts.get(p.id, 0))
         for p in meeting.participants
     ]
-    urgency_results: list[dict] = await asyncio.gather(*urgency_tasks)
+    try:
+        urgency_results: list[dict] = await asyncio.wait_for(
+            asyncio.gather(*urgency_tasks),
+            timeout=_URGENCY_TIMEOUT,
+        )
+    except asyncio.TimeoutError:
+        print(f"[urgency] TIMEOUT after {_URGENCY_TIMEOUT}s — defaulting all to urgency 5")
+        urgency_results = [
+            {"participant_id": p.id, "urgency": 5, "reason": "Urgency assessment timed out"}
+            for p in meeting.participants
+        ]
 
     # ── 1b. Deterministic addressing override ─────────────────────────────────
     recent_text = _last_messages_text(meeting, human_message).lower()

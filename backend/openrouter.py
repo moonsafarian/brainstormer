@@ -59,7 +59,7 @@ async def complete(
     model_id: str,
     max_tokens: int = 100,
     temperature: float = 0.3,
-    timeout: float = 30,
+    timeout: float = 45,
 ) -> dict:
     """Non-streaming completion — used for urgency assessment and structured outputs."""
     async with httpx.AsyncClient() as client:
