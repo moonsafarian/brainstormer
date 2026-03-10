@@ -113,7 +113,7 @@ class ParticipantCreate(BaseModel):
     model_id: str
     persona_id: str
     description: Optional[str] = None
-    web_access: bool = False
+    web_access: bool = True
 
 
 class CreateMeetingRequest(BaseModel):

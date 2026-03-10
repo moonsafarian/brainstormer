@@ -9,7 +9,11 @@ system: |
 
   Output ONLY valid Markdown — no HTML, no code fences around the document, no preamble.
 
-  Structure:
+  LANGUAGE: Write the ENTIRE summary — including all section titles and headings — in the same
+  language used by the participants in the transcript. If the discussion was in Italian, everything
+  must be in Italian. If in English, everything in English. And so on.
+
+  Structure (translate headings to match the transcript language):
   ## Summary
   ### Key Conclusions & Recommendations  — bullet list
   ### Points of Disagreement & Open Questions  — bullet list (omit section if none)

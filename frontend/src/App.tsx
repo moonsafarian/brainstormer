@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import type { Meeting } from "./types";
+import IntroScreen, { shouldShowIntro } from "./components/IntroScreen";
 import SetupScreen from "./components/SetupScreen";
 import MeetingScreen from "./components/MeetingScreen";
 import { reopenMeeting, onApiKeyError } from "./api";
 import type { HistoryEntry } from "./utils/history";
 
-type Screen = "setup" | "meeting";
+type Screen = "intro" | "setup" | "meeting";
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("setup");
+  const [screen, setScreen] = useState<Screen>(() => shouldShowIntro() ? "intro" : "setup");
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [historicalSummary, setHistoricalSummary] = useState<string | null>(null);
   const [showKeyError, setShowKeyError] = useState(false);
@@ -41,6 +42,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-th-page text-th-fg">
+      {screen === "intro" && (
+        <IntroScreen onStart={() => setScreen("setup")} />
+      )}
       {screen === "setup" && (
         <SetupScreen
           onMeetingCreated={handleMeetingCreated}

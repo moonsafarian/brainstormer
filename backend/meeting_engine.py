@@ -192,12 +192,14 @@ def _response_messages(
         if meeting.human_name
         else ""
     )
+    from datetime import date
     system = _P_RESPONSE["system"].format(
         display_name=display_name,
         participant_identity=_participant_identity(participant),
         others=others,
         human_line=human_line,
         meeting_topic=meeting.topic,
+        current_date=date.today().strftime("%B %d, %Y"),
     )
     return [
         {"role": "system", "content": system},

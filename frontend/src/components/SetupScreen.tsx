@@ -59,8 +59,8 @@ const ADVANCED_IDS = [
 
 // ── ModelSelect ───────────────────────────────────────────────────────────────
 
-const DROPDOWN_WIDTH = 320;
-const DROPDOWN_MAX_HEIGHT = 520;
+const DROPDOWN_WIDTH = 380;
+const DROPDOWN_MAX_HEIGHT = 640;
 
 function ModelSelect({
   value,
@@ -293,10 +293,10 @@ function ParticipantCard({
   return (
     <div className="bg-th-base border border-th-line rounded-xl px-3 py-2.5 flex flex-col gap-1">
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-sm font-medium text-th-fg-2 truncate">{name}</span>
+        <div className="min-w-0">
+          <span className="text-sm font-medium text-th-fg-2 truncate block">{name}</span>
           {personaName && (
-            <span className="text-xs text-th-accent-fg-2 shrink-0">{personaName}</span>
+            <span className="text-xs text-th-accent-fg-2">{personaName}</span>
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -844,6 +844,21 @@ export default function SetupScreen({
                 Cancel
               </button>
             </div>
+
+            <button
+              onClick={() => {
+                clearStoredApiKey();
+                setKeyActive(false);
+                setKeyInput("");
+                setStoredSuggestionModel("");
+                setSuggestionModelId("");
+                setStoredTheme("light");
+                setTheme("light");
+              }}
+              className="w-full mt-3 text-xs text-th-fg-muted hover:text-red-500 transition-colors"
+            >
+              Reset to defaults
+            </button>
           </div>
         </div>
       )}

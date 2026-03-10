@@ -79,7 +79,7 @@ async def complete(
 
 
 # Preferred model IDs for each role — resolved against available models at runtime.
-_SUGGESTION_MODEL_PREF = "openrouter/auto"
+_SUGGESTION_MODEL_PREF = "anthropic/claude-haiku-4-5"
 
 # Pool of models to distribute across suggested participants for model diversity.
 _PARTICIPANT_MODEL_POOL = [
@@ -217,14 +217,18 @@ async def suggest_participants(
     # Some reasoning models put output in reasoning field instead of content
     if not raw and msg.get("reasoning"):
         raw = msg["reasoning"].strip()
-    print(f"[suggest] raw response ({len(raw)} chars): {raw[:200]!r}")
+    print(f"[suggest] raw response ({len(raw)} chars): {raw[:300]!r}")
 
-    match = re.search(r"\[.*\]", raw, re.DOTALL)
+    # Strip markdown fences if present
+    stripped = re.sub(r"```(?:json)?\s*", "", raw).strip()
+    match = re.search(r"\[.*\]", stripped, re.DOTALL)
     if not match:
+        print(f"[suggest] no JSON array found in response")
         return []
     try:
         items = json.loads(match.group())
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as exc:
+        print(f"[suggest] JSON parse error: {exc}")
         return []
 
     valid_ids = {p["id"] for p in personas}
