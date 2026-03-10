@@ -26,7 +26,7 @@ A decision-support tool that simulates meetings with multiple AI participants. B
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 - Node.js 18+
 - An [OpenRouter](https://openrouter.ai/) API key
 
